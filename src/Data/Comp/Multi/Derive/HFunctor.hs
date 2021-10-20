@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Comp.Multi.Derive.HFunctor
@@ -53,7 +54,7 @@ makeHFunctor fname = do
                 do varNs <- newNames (length args) "x"
                    return (conE constr, mkCPat constr varNs,
                            \ f g -> filterVars args varNs (\ d x -> f d (varE x)) (g . varE),
-                           any (not . null) args, map varE varNs, catMaybes $ filterVars args varNs (curry Just) (const Nothing))
+                           any (not . null) args, map (varE @Q) varNs, catMaybes $ filterVars args varNs (curry Just) (const Nothing))
             hfmapClause (con, pat,vars',hasFargs,_,_) =
                 do fn <- newName "f"
                    let f = varE fn
