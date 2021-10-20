@@ -66,7 +66,7 @@ type SubstFun v a = NatM Maybe (K v) a
 
 
 substFun :: Ord v => GSubst v a -> SubstFun v a
-substFun s (K v) = fmap unA $ Map.lookup v s
+substFun s (K v) = (\x -> unA x) <$> Map.lookup v s
 
 {-| This multiparameter class defines functors with variables. An instance
   @HasVar f v@ denotes that values over @f@ might contain and bind variables of
@@ -162,7 +162,7 @@ varsToHoles t = unC (cata alg t) Set.empty
 
 -- | Convert variables to holes, except those that are bound.
 containsVarAlg :: forall v f . (Ord v, HasVars f v, HTraversable f) => v -> Alg f (K Bool)
-containsVarAlg v t = K $ hfoldlBoundVars run local t
+containsVarAlg v t = K $ hfoldlBoundVars (\x1 x2 -> run x1 x2) local t
     where local = case isVar t of
                     Just v' -> v == v'
                     Nothing -> False
@@ -183,7 +183,7 @@ variableList = Set.toList . variables
 -- |Algebra for checking whether a variable is contained in a term, except those
 -- that are bound.
 variablesAlg :: (Ord v, HasVars f v, HTraversable f) => Alg f (K (Set v))
-variablesAlg t = K $ hfoldlBoundVars run local t
+variablesAlg t = K $ hfoldlBoundVars (\x1 x2 -> run x1 x2) local t
     where local = case isVar t of
                     Just v -> Set.singleton v
                     Nothing -> Set.empty
